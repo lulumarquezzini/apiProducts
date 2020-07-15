@@ -19,8 +19,20 @@ const create = async (req, res) => {
     }
 }
 
-const update = async (request, response) => {
-
+const update = async (req, res) => {
+    try {
+        const productId  = req.params.id;
+        const [ updated ] = await models.Product.update(req.body, {
+          where: { id: productId }
+        });
+        if (updated) {
+          const updatedProduct = await models.Product.findOne({ where: { id: productId } });
+          return res.status(200).json({ product: updatedProduct });
+        }
+        throw new Error('Product not found');
+      } catch (error) {
+        return res.status(500).send(error.message);
+      }
 }
 
 const destroy = async (request, response) => {
