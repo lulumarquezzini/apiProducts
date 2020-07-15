@@ -35,8 +35,19 @@ const update = async (req, res) => {
       }
 }
 
-const destroy = async (request, response) => {
-
+const destroy = async (req, res) => {
+    try {
+        const productId  = req.params.id;
+        const deleted = await models.Product.destroy({
+          where: { id: productId }
+        });
+        if (deleted) {
+          return res.status(204).send("Product deleted");
+        }
+        throw new Error("Product not found");
+      } catch (error) {
+        return res.status(500).send(error.message);
+      }
 }
 
 
