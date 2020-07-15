@@ -13,9 +13,6 @@ const productRoutes = require('./src/routes/productRoute');
 // MULTER
 const multer = require('multer')
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/')
-  },
   filename: function(req, file, cb) {
     console.log(file)
     cb(null, file.originalname)
@@ -28,7 +25,32 @@ app.post('/api/v1/upload', (req, res, next) => {
       if (err) {
         return res.send(err)
       }
-      res.json(req.file)
+      console.log("Image uploaded to server")
+
+        // SEND FILE TO CLOUDINARY
+        const cloudinary = require('cloudinary').v2
+        cloudinary.config({
+            cloud_name: 'dsc0yzyxi',
+            api_key: '623475362488624',
+            api_secret: 'syRm_WAJ4iMFh3IbGEG0GUmF-Ss'
+        })
+
+        const path = req.file.path
+        const uniqueFilename = new Date().toISOString()
+
+        cloudinary.uploader.upload(
+        path,
+        { public_id: `products/${uniqueFilename}`, tags: 'product' }, // directory and tags are optional
+        function(err, image) {
+            if (err) return res.send(err)
+            console.log('file uploaded to Cloudinary')
+            // remove file from server
+            const fs = require('fs')
+            fs.unlinkSync(path)
+            // return image details
+            res.json(image)
+        }
+        )
     })
 })
 
